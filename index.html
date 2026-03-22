@@ -226,27 +226,7 @@ input::placeholder,textarea::placeholder{color:var(--t3)}
 }
 option{background:#18181c}
 
-/* ── Category pills ── */
-.cat-scroll{
-  overflow-x:auto;overflow-y:hidden;
-  margin:0 -20px 20px;padding:0 20px 10px;
-  -webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;
-}
-.cat-scroll::-webkit-scrollbar{display:none}
-@media(min-width:600px){.cat-scroll{margin:0 0 24px;padding:0 0 4px}}
-.cat-tabs{display:flex;gap:6px;width:max-content}
-@media(min-width:600px){.cat-tabs{flex-wrap:wrap;width:auto}}
-.cat-tab{
-  padding:7px 15px;border-radius:20px;font-size:12px;font-weight:600;
-  cursor:pointer;border:1px solid var(--b1);background:transparent;
-  color:var(--t3);transition:all .15s var(--ease);letter-spacing:0.02em;
-  white-space:nowrap;min-height:36px;display:flex;align-items:center;
-}
-.cat-tab:active{opacity:.7}
-@media(hover:hover){.cat-tab:hover{border-color:var(--b2);color:var(--t2)}}
-.cat-tab.active{background:var(--accent-dim);border-color:rgba(103,33,255,0.35);color:var(--accent)}
-.cat-n{font-family:var(--mono);font-size:10px;color:var(--t3);margin-left:5px}
-.cat-tab.active .cat-n{color:rgba(103,33,255,0.55)}
+
 
 /* ── Grid ── */
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -321,8 +301,7 @@ option{background:#18181c}
 .app-desc{font-size:11px;color:var(--t2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 @media(min-width:480px){.app-desc{font-size:12px}}
 .card-foot{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.cat-badge{font-family:var(--mono);font-size:9px;font-weight:500;padding:3px 8px;border-radius:20px;letter-spacing:0.03em;white-space:nowrap;flex-shrink:0}
-@media(min-width:480px){.cat-badge{font-size:10px;padding:3px 9px}}
+
 .open-btn{
   display:inline-flex;align-items:center;gap:4px;
   font-size:11px;font-weight:600;color:var(--accent);
@@ -522,12 +501,7 @@ option{background:#18181c}
       <select class="ctrl-select" id="sortBy">
         <option value="name">A → Z</option>
         <option value="date">Recent</option>
-        <option value="category">Category</option>
       </select>
-    </div>
-
-    <div class="cat-scroll">
-      <div class="cat-tabs" id="catTabs"></div>
     </div>
 
     <div class="grid" id="grid">
@@ -567,14 +541,6 @@ option{background:#18181c}
       <div class="field">
         <label>Description</label>
         <textarea id="fDesc" placeholder="Short description (optional)"></textarea>
-      </div>
-      <div class="field">
-        <label>Category</label>
-        <select id="fCat">
-          <option>General</option><option>Tools</option><option>Analytics</option>
-          <option>Finance</option><option>Design</option><option>Dev</option>
-          <option>Productivity</option><option>Games</option><option>Other</option>
-        </select>
       </div>
       <div class="modal-foot">
         <button class="btn btn-ghost" id="cancelBtn">Cancel</button>
@@ -626,25 +592,12 @@ const db   = getFirestore(firebaseApp);
 
 /* ── Constants ── */
 const EMOJIS = ['🚀','⚡','📊','🎨','💡','🛠️','📱','💻','🌐','📈','🎮','🤖','🔐','📦','🌟','💰','📝','🔬','🏆','🎵','📷','🛒','🔧','🌈','📡','🗂️','⚙️','🔑','🧪','🌍','📌','🧩'];
-const CAT_STYLES = {
-  General:     {bg:'rgba(130,130,150,0.13)',text:'#8a8a9e'},
-  Tools:       {bg:'rgba(103,33,255,0.13)',  text:'#9b6bff'},
-  Analytics:   {bg:'rgba(67,199,138,0.13)',  text:'#43c78a'},
-  Finance:     {bg:'rgba(240,166,66,0.13)',  text:'#f0a642'},
-  Design:      {bg:'rgba(240,101,101,0.13)', text:'#f06565'},
-  Dev:         {bg:'rgba(78,198,247,0.13)',  text:'#4ec6f7'},
-  Productivity:{bg:'rgba(168,220,80,0.13)',  text:'#98cc40'},
-  Games:       {bg:'rgba(200,100,240,0.13)', text:'#c864f0'},
-  Other:       {bg:'rgba(130,130,150,0.13)', text:'#8a8a9e'},
-};
-
 /* ── State ── */
 let apps       = [];
-let activeCat  = 'All';
 let editId     = null;
 let selEmoji   = '🚀';
 let isListView = false;
-let unsubSnap  = null; // Firestore listener cleanup
+let unsubSnap  = null;
 
 /* ── Utilities ── */
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
@@ -688,7 +641,6 @@ onAuthStateChanged(auth, user => {
       snapshot => {
         apps = snapshot.docs.map(d => ({ ...d.data(), _id: d.id }));
         setSyncDot('synced');
-        renderTabs();
         renderGrid();
       },
       err => {
@@ -744,27 +696,11 @@ function getFiltered(){
   const q    = document.getElementById('search').value.toLowerCase();
   const sort = document.getElementById('sortBy').value;
   let list = apps.filter(a => {
-    const catOk = activeCat === 'All' || a.category === activeCat;
-    const qOk   = !q || a.name.toLowerCase().includes(q) || (a.desc||'').toLowerCase().includes(q) || a.category.toLowerCase().includes(q);
-    return catOk && qOk;
+    return !q || a.name.toLowerCase().includes(q) || (a.desc||'').toLowerCase().includes(q);
   });
   if(sort === 'name')      list.sort((a,b) => a.name.localeCompare(b.name));
   else if(sort === 'date') list.sort((a,b) => (b.date?.seconds||0) - (a.date?.seconds||0));
-  else                     list.sort((a,b) => a.category.localeCompare(b.category));
   return list;
-}
-
-/* ── Render tabs ── */
-function renderTabs(){
-  const cats = ['All', ...new Set(apps.map(a => a.category).sort())];
-  const el   = document.getElementById('catTabs');
-  el.innerHTML = cats.map(c => {
-    const n = c === 'All' ? apps.length : apps.filter(a => a.category === c).length;
-    return `<button class="cat-tab${c===activeCat?' active':''}" data-c="${c}">${c}<span class="cat-n">${n}</span></button>`;
-  }).join('');
-  el.querySelectorAll('.cat-tab').forEach(b => b.addEventListener('click', () => {
-    activeCat = b.dataset.c; renderTabs(); renderGrid();
-  }));
 }
 
 /* ── Render grid ── */
@@ -775,12 +711,11 @@ function renderGrid(){
   document.getElementById('statPill').innerHTML = `<b>${apps.length}</b> app${apps.length!==1?'s':''}`;
 
   if(!list.length){
-    grid.innerHTML = `<div class="empty"><svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect x="4" y="4" width="36" height="36" rx="6" stroke="#555566" stroke-width="1.5" stroke-dasharray="5 3"/><path d="M15 22h14M22 15v14" stroke="#555566" stroke-width="1.5" stroke-linecap="round"/></svg><h3>No apps found</h3><p>Add a new app or change your filter.</p></div>`;
+    grid.innerHTML = `<div class="empty"><svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect x="4" y="4" width="36" height="36" rx="6" stroke="#555566" stroke-width="1.5" stroke-dasharray="5 3"/><path d="M15 22h14M22 15v14" stroke="#555566" stroke-width="1.5" stroke-linecap="round"/></svg><h3>No apps found</h3><p>Add a new app or try a different search.</p></div>`;
     return;
   }
 
   grid.innerHTML = list.map((a, i) => {
-    const s = CAT_STYLES[a.category] || CAT_STYLES.Other;
     return `<div class="app-card" style="animation-delay:${i*.04}s">
   <div class="card-top">
     <div class="app-icon">${a.emoji||'📦'}</div>
@@ -799,7 +734,6 @@ function renderGrid(){
     ${a.desc ? `<div class="app-desc">${esc(a.desc)}</div>` : ''}
   </div>
   <div class="card-foot">
-    <div class="cat-badge" style="background:${s.bg};color:${s.text}">${esc(a.category)}</div>
     <a href="${esc(a.url)}" target="_blank" rel="noopener" class="open-btn">Open <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="margin-top:1px"><path d="M2 8L8 2M4.5 2H8v3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
   </div>
 </div>`;
@@ -826,7 +760,6 @@ function openAdd(){
   document.getElementById('fName').value = '';
   document.getElementById('fUrl').value  = '';
   document.getElementById('fDesc').value = '';
-  document.getElementById('fCat').value  = 'General';
   buildEmojiRow('🚀');
   document.getElementById('modal').classList.add('open');
   if(window.innerWidth >= 520) setTimeout(() => document.getElementById('fName').focus(), 80);
@@ -839,7 +772,6 @@ function openEdit(id){
   document.getElementById('fName').value = a.name;
   document.getElementById('fUrl').value  = a.url;
   document.getElementById('fDesc').value = a.desc || '';
-  document.getElementById('fCat').value  = a.category;
   buildEmojiRow(selEmoji);
   document.getElementById('modal').classList.add('open');
 }
@@ -858,9 +790,8 @@ async function saveApp(){
 
   const data = {
     name, url,
-    desc:     document.getElementById('fDesc').value.trim(),
-    category: document.getElementById('fCat').value,
-    emoji:    selEmoji,
+    desc:  document.getElementById('fDesc').value.trim(),
+    emoji: selEmoji,
   };
 
   setSyncDot('syncing');

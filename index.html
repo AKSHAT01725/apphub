@@ -6,6 +6,16 @@
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="AppHub"/>
+<meta name="theme-color" content="#6721FF"/>
+<meta name="description" content="Your personal web app launcher"/>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json"/>
+
+<!-- Apple Touch Icon (inline SVG as data URI fallback) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='38' fill='%236721FF'/%3E%3Crect x='32' y='32' width='56' height='56' rx='10' fill='white' opacity='.9'/%3E%3Crect x='104' y='32' width='56' height='56' rx='10' fill='white' opacity='.55'/%3E%3Crect x='32' y='104' width='56' height='56' rx='10' fill='white' opacity='.55'/%3E%3Crect x='104' y='104' width='56' height='56' rx='10' fill='white' opacity='.9'/%3E%3C/svg%3E"/>
+
 <title>AppHub</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -56,6 +66,86 @@ body::before{
 }
 
 /* ════════════════════════════
+   INSTALL BANNER
+════════════════════════════ */
+#installBanner{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--s1);
+  border-top:1px solid var(--b2);
+  padding:16px 20px calc(16px + var(--safe-bottom));
+  z-index:500;
+  box-shadow:0 -8px 40px rgba(0,0,0,0.5);
+  animation:slideUp .3s var(--ease);
+}
+#installBanner.show{display:block}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+
+.install-inner{
+  display:flex;align-items:center;gap:14px;
+  max-width:480px;margin:0 auto;
+}
+.install-icon{
+  width:48px;height:48px;border-radius:12px;
+  background:var(--accent);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(103,33,255,0.4);
+}
+.install-text{flex:1;min-width:0}
+.install-text strong{display:block;font-size:14px;font-weight:700;color:var(--t1);margin-bottom:2px}
+.install-text span{font-size:12px;color:var(--t2);line-height:1.4}
+.install-btns{display:flex;gap:8px;flex-shrink:0}
+.btn-install{
+  background:var(--accent);color:#fff;
+  border:none;border-radius:var(--r);padding:9px 16px;
+  font-family:var(--sans);font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .15s var(--ease);
+  white-space:nowrap;
+}
+.btn-install:active{opacity:.8;transform:scale(.96)}
+@media(hover:hover){.btn-install:hover{background:var(--accent-hover)}}
+.btn-dismiss{
+  background:transparent;color:var(--t3);
+  border:1px solid var(--b2);border-radius:var(--r);
+  padding:9px 12px;font-family:var(--sans);font-size:13px;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+@media(hover:hover){.btn-dismiss:hover{color:var(--t2);border-color:var(--b3)}}
+
+/* iOS install instructions */
+#iosInstallTip{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--s1);border-top:1px solid var(--b2);
+  padding:20px 20px calc(20px + var(--safe-bottom));
+  z-index:500;animation:slideUp .3s var(--ease);
+  box-shadow:0 -8px 40px rgba(0,0,0,0.5);
+}
+#iosInstallTip.show{display:block}
+.ios-tip-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;
+}
+.ios-tip-head h3{font-size:15px;font-weight:700}
+.ios-steps{display:flex;flex-direction:column;gap:12px}
+.ios-step{
+  display:flex;align-items:center;gap:12px;
+  font-size:13px;color:var(--t2);line-height:1.4;
+}
+.ios-step-num{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--accent-dim);border:1px solid rgba(103,33,255,0.3);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  color:var(--accent);flex-shrink:0;
+}
+.ios-step strong{color:var(--t1)}
+.share-icon-inline{
+  display:inline-flex;align-items:center;vertical-align:middle;
+  background:var(--s3);border-radius:5px;padding:2px 5px;margin:0 2px;
+}
+
+/* ════════════════════════════
    AUTH SCREEN
 ════════════════════════════ */
 #authScreen{
@@ -92,11 +182,27 @@ body::before{
 .btn-google:hover{background:#f1f1f1;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,0.2)}
 .btn-google:active{transform:none;opacity:.85}
 .btn-google svg{flex-shrink:0}
-
 .auth-note{font-size:11px;color:var(--t3);margin-top:18px}
 
+/* Install prompt on auth screen */
+.auth-install-hint{
+  margin-top:20px;padding:14px;
+  background:var(--s2);border:1px solid var(--b1);
+  border-radius:var(--r2);text-align:left;
+  display:none;
+}
+.auth-install-hint.show{display:block}
+.auth-install-hint p{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px}
+.auth-install-hint button{
+  width:100%;padding:10px;
+  background:var(--accent);color:#fff;
+  border:none;border-radius:var(--r);
+  font-family:var(--sans);font-size:13px;font-weight:600;
+  cursor:pointer;
+}
+
 /* ════════════════════════════
-   MAIN APP (hidden until auth)
+   MAIN APP
 ════════════════════════════ */
 #appScreen{display:none}
 #appScreen.visible{display:block}
@@ -107,7 +213,6 @@ body::before{
 }
 @media(min-width:600px){.page{padding:0 32px 100px}}
 
-/* ── Topbar ── */
 .topbar{
   display:flex;align-items:center;justify-content:space-between;
   padding:calc(16px + var(--safe-top)) 0 18px;
@@ -139,8 +244,6 @@ body::before{
   border-radius:20px;padding:4px 11px;letter-spacing:0.03em;
 }
 .pill-stat b{color:var(--t2)}
-
-/* Sync dot */
 .sync-dot{
   width:7px;height:7px;border-radius:50%;background:var(--t3);
   flex-shrink:0;transition:background .3s;
@@ -150,7 +253,6 @@ body::before{
 .sync-dot.error{background:var(--red)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
 
-/* User avatar */
 .user-avatar{
   width:30px;height:30px;border-radius:50%;
   border:2px solid var(--b2);
@@ -160,7 +262,6 @@ body::before{
 }
 .user-avatar:hover{border-color:var(--accent)}
 
-/* User menu */
 .user-menu-wrap{position:relative}
 .user-menu{
   display:none;position:absolute;right:0;top:calc(100% + 8px);
@@ -186,7 +287,10 @@ body::before{
 .menu-item.danger{color:var(--red)}
 .menu-item.danger:hover{background:var(--red-dim)}
 
-/* ── Buttons ── */
+/* Install button in menu */
+.menu-item.install-item{color:var(--accent)}
+.menu-item.install-item:hover{background:var(--accent-dim)}
+
 .btn{
   display:inline-flex;align-items:center;gap:7px;
   padding:9px 17px;border-radius:var(--r);
@@ -203,7 +307,6 @@ body::before{
 .topbar-add{display:none}
 @media(min-width:600px){.topbar-add{display:inline-flex}}
 
-/* ── Controls ── */
 .controls{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .search-wrap{flex:1;min-width:0;position:relative}
 .search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--t3)}
@@ -226,15 +329,11 @@ input::placeholder,textarea::placeholder{color:var(--t3)}
 }
 option{background:#18181c}
 
-
-
-/* ── Grid ── */
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(min-width:480px){.grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}}
 @media(min-width:900px){.grid{grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px}}
 .grid.lv{grid-template-columns:1fr;gap:6px}
 
-/* ── Card ── */
 .app-card{
   background:var(--s1);border:1px solid var(--b1);
   border-radius:var(--r2);padding:14px;
@@ -257,7 +356,6 @@ option{background:#18181c}
 }
 .app-card:active{opacity:.88}
 
-/* List view */
 .grid.lv .app-card{flex-direction:row;align-items:center;padding:12px 14px;gap:12px;border-radius:var(--r)}
 @media(min-width:480px){.grid.lv .app-card{padding:13px 18px;gap:16px}}
 .grid.lv .card-body{flex:1;min-width:0}
@@ -314,7 +412,6 @@ option{background:#18181c}
 .open-btn:active{opacity:.75}
 @media(hover:hover){.open-btn:hover{background:var(--accent-mid);border-color:rgba(103,33,255,0.4)}}
 
-/* ── Loading / Empty ── */
 .loading{grid-column:1/-1;text-align:center;padding:80px 20px}
 .spinner{
   width:28px;height:28px;border:2px solid var(--b2);
@@ -328,7 +425,6 @@ option{background:#18181c}
 .empty h3{font-size:15px;font-weight:600;color:var(--t3);margin-bottom:5px}
 .empty p{font-size:13px}
 
-/* ── FAB ── */
 .fab{
   display:flex;position:fixed;
   right:20px;bottom:calc(20px + var(--safe-bottom));
@@ -341,7 +437,6 @@ option{background:#18181c}
 .fab:active{transform:scale(.92)}
 @media(min-width:600px){.fab{display:none}}
 
-/* ── Modal / Bottom Sheet ── */
 .modal-back{
   display:none;position:fixed;inset:0;
   background:rgba(0,0,0,0.72);z-index:300;
@@ -394,7 +489,6 @@ option{background:#18181c}
 .modal-foot .btn{flex:1}
 @media(min-width:520px){.modal-foot .btn{flex:0 0 auto}}
 
-/* ── Toast ── */
 .toast{
   position:fixed;bottom:calc(80px + var(--safe-bottom));left:50%;
   transform:translateX(-50%) translateY(10px);
@@ -415,6 +509,50 @@ option{background:#18181c}
 </head>
 <body>
 
+<!-- ══ INSTALL BANNER (Android / Desktop Chrome) ══ -->
+<div id="installBanner">
+  <div class="install-inner">
+    <div class="install-icon">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <rect x="3" y="3" width="9" height="9" rx="2" fill="white" opacity=".9"/>
+        <rect x="14" y="3" width="9" height="9" rx="2" fill="white" opacity=".55"/>
+        <rect x="3" y="14" width="9" height="9" rx="2" fill="white" opacity=".55"/>
+        <rect x="14" y="14" width="9" height="9" rx="2" fill="white" opacity=".9"/>
+      </svg>
+    </div>
+    <div class="install-text">
+      <strong>Install AppHub</strong>
+      <span>Add to home screen for quick access — no app store needed</span>
+    </div>
+    <div class="install-btns">
+      <button class="btn-install" id="installBtn">Install</button>
+      <button class="btn-dismiss" id="dismissInstall">Later</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ iOS INSTALL TIP ══ -->
+<div id="iosInstallTip">
+  <div class="ios-tip-head">
+    <h3>Install AppHub on your iPhone</h3>
+    <button class="close-btn" id="closeIosTip">✕</button>
+  </div>
+  <div class="ios-steps">
+    <div class="ios-step">
+      <div class="ios-step-num">1</div>
+      <div>Tap the <span class="share-icon-inline"><svg width="14" height="16" viewBox="0 0 14 16" fill="none"><path d="M7 1v9M4 4L7 1l3 3" stroke="#9898a8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 7H1a1 1 0 00-1 1v7a1 1 0 001 1h12a1 1 0 001-1V8a1 1 0 00-1-1h-1" stroke="#9898a8" stroke-width="1.4" stroke-linecap="round"/></svg></span> <strong>Share</strong> button in Safari's toolbar</div>
+    </div>
+    <div class="ios-step">
+      <div class="ios-step-num">2</div>
+      <div>Scroll down and tap <strong>"Add to Home Screen"</strong></div>
+    </div>
+    <div class="ios-step">
+      <div class="ios-step-num">3</div>
+      <div>Tap <strong>"Add"</strong> — AppHub icon appears on your home screen!</div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ AUTH SCREEN ══ -->
 <div id="authScreen">
   <div class="auth-card">
@@ -429,16 +567,21 @@ option{background:#18181c}
     <h1>AppHub</h1>
     <p>Your personal web app launcher.<br/>Sign in to access your apps from anywhere.</p>
     <button class="btn-google" id="googleSignInBtn">
-      <!-- Google G logo -->
       <svg width="20" height="20" viewBox="0 0 48 48">
         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
         <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
         <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
         <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-        <path fill="none" d="M0 0h48v48H0z"/>
       </svg>
       Continue with Google
     </button>
+
+    <!-- iOS hint shown on Safari -->
+    <div class="auth-install-hint" id="iosAuthHint">
+      <p>📱 <strong>Tip:</strong> Install AppHub on your iPhone home screen for the best experience.</p>
+      <button id="iosAuthHintBtn">How to install →</button>
+    </div>
+
     <div class="auth-note">Your apps are private to your account only.</div>
   </div>
 </div>
@@ -473,7 +616,6 @@ option{background:#18181c}
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5v9M1.5 6h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           Add App
         </button>
-        <!-- User avatar + menu -->
         <div class="user-menu-wrap">
           <img id="userAvatar" class="user-avatar" src="" alt="User" width="30" height="30"/>
           <div class="user-menu" id="userMenu">
@@ -481,6 +623,11 @@ option{background:#18181c}
               <div class="user-menu-name" id="menuName"></div>
               <div class="user-menu-email" id="menuEmail"></div>
             </div>
+            <!-- Install button in menu -->
+            <button class="menu-item install-item" id="menuInstallBtn" style="display:none">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Install App
+            </button>
             <button class="menu-item danger" id="signOutBtn">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2H3a1 1 0 00-1 1v8a1 1 0 001 1h2M10 10l3-3-3-3M13 7H5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Sign out
@@ -552,6 +699,87 @@ option{background:#18181c}
 
 <div class="toast" id="toast"></div>
 
+<script>
+/* ── Service Worker Registration ── */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.log('SW failed:', err));
+  });
+}
+
+/* ── PWA Install Logic ── */
+let deferredPrompt = null;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone === true;
+
+// Android / Chrome: catch beforeinstallprompt
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show banner if not already installed and not dismissed
+  if (!isInStandaloneMode && !sessionStorage.getItem('installDismissed')) {
+    setTimeout(() => {
+      document.getElementById('installBanner').classList.add('show');
+    }, 2000);
+  }
+  // Show install button in user menu
+  document.getElementById('menuInstallBtn').style.display = 'flex';
+});
+
+document.getElementById('installBtn').addEventListener('click', async () => {
+  document.getElementById('installBanner').classList.remove('show');
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') showToast('AppHub installed! 🎉');
+    deferredPrompt = null;
+    document.getElementById('menuInstallBtn').style.display = 'none';
+  }
+});
+
+document.getElementById('dismissInstall').addEventListener('click', () => {
+  document.getElementById('installBanner').classList.remove('show');
+  sessionStorage.setItem('installDismissed', '1');
+});
+
+// Menu install button
+document.getElementById('menuInstallBtn').addEventListener('click', async () => {
+  document.getElementById('userMenu').classList.remove('open');
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') showToast('AppHub installed! 🎉');
+    deferredPrompt = null;
+    document.getElementById('menuInstallBtn').style.display = 'none';
+  } else if (isIOS) {
+    document.getElementById('iosInstallTip').classList.add('show');
+  }
+});
+
+// iOS: show hint on auth screen
+if (isIOS && !isInStandaloneMode) {
+  document.getElementById('iosAuthHint').classList.add('show');
+}
+
+document.getElementById('iosAuthHintBtn').addEventListener('click', () => {
+  document.getElementById('iosInstallTip').classList.add('show');
+});
+
+document.getElementById('closeIosTip').addEventListener('click', () => {
+  document.getElementById('iosInstallTip').classList.remove('show');
+});
+
+// Hide banner/tip when installed
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').classList.remove('show');
+  document.getElementById('menuInstallBtn').style.display = 'none';
+  showToast('AppHub installed! 🎉');
+});
+</script>
+
 <script type="module">
 import { initializeApp }       from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getAnalytics }         from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
@@ -575,7 +803,6 @@ import {
   orderBy
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
-/* ── Firebase ── */
 const firebaseConfig = {
   apiKey:            "AIzaSyD8R1T24aMWItAgqwb814Aa49A1HmtW6Js",
   authDomain:        "apphub-e805e.firebaseapp.com",
@@ -590,267 +817,173 @@ getAnalytics(firebaseApp);
 const auth = getAuth(firebaseApp);
 const db   = getFirestore(firebaseApp);
 
-/* ── Constants ── */
 const EMOJIS = ['🚀','⚡','📊','🎨','💡','💻','🌐','📈','🎮','🤖','🔐','💰','📝','🗂️','⚙️','🌍','📌','🏋️','🏃','⚽','🎯','❤️','🔥','💪'];
-/* ── State ── */
-let apps       = [];
-let editId     = null;
-let selEmoji   = '🚀';
-let isListView = false;
-let unsubSnap  = null;
+let apps=[], editId=null, selEmoji='🚀', isListView=false, unsubSnap=null;
 
-/* ── Utilities ── */
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
-
-function setSyncDot(state){
-  const d = document.getElementById('syncDot');
-  d.className = 'sync-dot ' + state;
-  d.title = {synced:'Synced',syncing:'Saving…',error:'Sync error'}[state]||'';
-}
+function setSyncDot(state){ const d=document.getElementById('syncDot'); d.className='sync-dot '+state; }
 
 let toastTimer;
 function showToast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2400);
 }
+window.showToast = showToast;
 
-/* ── Auth state ── */
 onAuthStateChanged(auth, user => {
   if(user){
-    // Show app, hide auth
-    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('authScreen').style.display='none';
     document.getElementById('appScreen').classList.add('visible');
-    // Show FAB on mobile
-    const fab = document.getElementById('fabBtn');
-    fab.style.display = '';
-
-    // Populate user info
-    document.getElementById('userAvatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName||'U')}&background=6721FF&color=fff&size=60`;
-    document.getElementById('menuName').textContent  = user.displayName || 'User';
-    document.getElementById('menuEmail').textContent = user.email || '';
-
-    // Subscribe to THIS user's apps collection: /users/{uid}/apps
+    document.getElementById('fabBtn').style.display='';
+    document.getElementById('userAvatar').src=user.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName||'U')}&background=6721FF&color=fff&size=60`;
+    document.getElementById('menuName').textContent=user.displayName||'User';
+    document.getElementById('menuEmail').textContent=user.email||'';
     if(unsubSnap) unsubSnap();
     setSyncDot('syncing');
-    const appsCol = collection(db, 'users', user.uid, 'apps');
-    const q = query(appsCol, orderBy('date','desc'));
-    unsubSnap = onSnapshot(q,
-      snapshot => {
-        apps = snapshot.docs.map(d => ({ ...d.data(), _id: d.id }));
-        setSyncDot('synced');
-        renderGrid();
-      },
-      err => {
-        setSyncDot('error');
-        console.error('Firestore:', err);
-        document.getElementById('grid').innerHTML =
-          `<div class="empty"><svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect x="4" y="4" width="36" height="36" rx="6" stroke="#f06565" stroke-width="1.5" stroke-dasharray="5 3"/><path d="M22 14v10M22 28v2" stroke="#f06565" stroke-width="1.5" stroke-linecap="round"/></svg><h3>Connection error</h3><p>Check Firestore rules for /users/{uid}/apps.</p></div>`;
-      }
+    const appsCol=collection(db,'users',user.uid,'apps');
+    const q=query(appsCol,orderBy('date','desc'));
+    unsubSnap=onSnapshot(q,
+      snapshot=>{ apps=snapshot.docs.map(d=>({...d.data(),_id:d.id})); setSyncDot('synced'); renderGrid(); },
+      err=>{ setSyncDot('error'); console.error('Firestore:',err); }
     );
-
-    // Store col ref globally for writes
-    window._appsCol = appsCol;
-    window._db      = db;
-    window._uid     = user.uid;
-
+    window._appsCol=appsCol; window._db=db; window._uid=user.uid;
   } else {
-    // Show auth screen
-    document.getElementById('authScreen').style.display = '';
+    document.getElementById('authScreen').style.display='';
     document.getElementById('appScreen').classList.remove('visible');
-    document.getElementById('fabBtn').style.display = 'none';
-    if(unsubSnap){ unsubSnap(); unsubSnap = null; }
-    apps = [];
+    document.getElementById('fabBtn').style.display='none';
+    if(unsubSnap){unsubSnap();unsubSnap=null;}
+    apps=[];
   }
 });
 
-/* ── Google Sign In ── */
-document.getElementById('googleSignInBtn').addEventListener('click', async () => {
-  try {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-  } catch(err){
-    console.error('Sign in error:', err);
-    showToast('Sign in failed — try again');
-  }
+document.getElementById('googleSignInBtn').addEventListener('click',async()=>{
+  try{ await signInWithPopup(auth,new GoogleAuthProvider()); }
+  catch(err){ console.error(err); showToast('Sign in failed — try again'); }
 });
-
-/* ── Sign Out ── */
-document.getElementById('signOutBtn').addEventListener('click', async () => {
+document.getElementById('signOutBtn').addEventListener('click',async()=>{
   document.getElementById('userMenu').classList.remove('open');
-  await signOut(auth);
-  showToast('Signed out');
+  await signOut(auth); showToast('Signed out');
 });
-
-/* ── User menu toggle ── */
-document.getElementById('userAvatar').addEventListener('click', e => {
+document.getElementById('userAvatar').addEventListener('click',e=>{
   e.stopPropagation();
   document.getElementById('userMenu').classList.toggle('open');
 });
-document.addEventListener('click', () => document.getElementById('userMenu').classList.remove('open'));
+document.addEventListener('click',()=>document.getElementById('userMenu').classList.remove('open'));
 
-/* ── Filter ── */
 function getFiltered(){
-  const q    = document.getElementById('search').value.toLowerCase();
-  const sort = document.getElementById('sortBy').value;
-  let list = apps.filter(a => {
-    return !q || a.name.toLowerCase().includes(q) || (a.desc||'').toLowerCase().includes(q);
-  });
-  if(sort === 'name')      list.sort((a,b) => a.name.localeCompare(b.name));
-  else if(sort === 'date') list.sort((a,b) => (b.date?.seconds||0) - (a.date?.seconds||0));
+  const q=document.getElementById('search').value.toLowerCase();
+  const sort=document.getElementById('sortBy').value;
+  let list=apps.filter(a=>!q||a.name.toLowerCase().includes(q)||(a.desc||'').toLowerCase().includes(q));
+  if(sort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
+  else list.sort((a,b)=>(b.date?.seconds||0)-(a.date?.seconds||0));
   return list;
 }
 
-/* ── Render grid ── */
 function renderGrid(){
-  const list = getFiltered();
-  const grid = document.getElementById('grid');
-  grid.className = 'grid' + (isListView ? ' lv' : '');
-  document.getElementById('statPill').innerHTML = `<b>${apps.length}</b> app${apps.length!==1?'s':''}`;
-
+  const list=getFiltered();
+  const grid=document.getElementById('grid');
+  grid.className='grid'+(isListView?' lv':'');
+  document.getElementById('statPill').innerHTML=`<b>${apps.length}</b> app${apps.length!==1?'s':''}`;
   if(!list.length){
-    grid.innerHTML = `<div class="empty"><svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect x="4" y="4" width="36" height="36" rx="6" stroke="#555566" stroke-width="1.5" stroke-dasharray="5 3"/><path d="M15 22h14M22 15v14" stroke="#555566" stroke-width="1.5" stroke-linecap="round"/></svg><h3>No apps found</h3><p>Add a new app or try a different search.</p></div>`;
+    grid.innerHTML=`<div class="empty"><svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect x="4" y="4" width="36" height="36" rx="6" stroke="#555566" stroke-width="1.5" stroke-dasharray="5 3"/><path d="M15 22h14M22 15v14" stroke="#555566" stroke-width="1.5" stroke-linecap="round"/></svg><h3>No apps found</h3><p>Add a new app or try a different search.</p></div>`;
     return;
   }
-
-  grid.innerHTML = list.map((a, i) => {
-    return `<div class="app-card" style="animation-delay:${i*.04}s">
-  <div class="card-top">
-    <div class="app-icon">${a.emoji||'📦'}</div>
-    <div class="card-actions">
-      <button class="ic-btn" data-edit="${a._id}" title="Edit">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8.2 1.8l2 2-6.5 6.5H1.7V8.3l6.5-6.5z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>
-      </button>
-      <button class="ic-btn del" data-del="${a._id}" title="Delete">
-        <svg width="11" height="12" viewBox="0 0 11 12" fill="none"><path d="M1 3h9M4 3V2h3v1M2 3l.5 7.5h6L9 3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>
-  </div>
+  grid.innerHTML=list.map((a,i)=>`<div class="app-card" style="animation-delay:${i*.04}s">
+  <div class="card-top"><div class="app-icon">${a.emoji||'📦'}</div><div class="card-actions">
+    <button class="ic-btn" data-edit="${a._id}" title="Edit"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8.2 1.8l2 2-6.5 6.5H1.7V8.3l6.5-6.5z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg></button>
+    <button class="ic-btn del" data-del="${a._id}" title="Delete"><svg width="11" height="12" viewBox="0 0 11 12" fill="none"><path d="M1 3h9M4 3V2h3v1M2 3l.5 7.5h6L9 3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div></div>
   <div class="lv-icon">${a.emoji||'📦'}</div>
-  <div class="card-body">
-    <div class="app-name">${esc(a.name)}</div>
-    ${a.desc ? `<div class="app-desc">${esc(a.desc)}</div>` : ''}
-  </div>
-  <div class="card-foot">
-    <a href="${esc(a.url)}" target="_blank" rel="noopener" class="open-btn">Open <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="margin-top:1px"><path d="M2 8L8 2M4.5 2H8v3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-  </div>
-</div>`;
-  }).join('');
-
-  grid.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openEdit(b.dataset.edit) }));
-  grid.querySelectorAll('[data-del]').forEach(b  => b.addEventListener('click', e => { e.stopPropagation(); deleteApp(b.dataset.del) }));
+  <div class="card-body"><div class="app-name">${esc(a.name)}</div>${a.desc?`<div class="app-desc">${esc(a.desc)}</div>`:''}</div>
+  <div class="card-foot"><a href="${esc(a.url)}" target="_blank" rel="noopener" class="open-btn">Open <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="margin-top:1px"><path d="M2 8L8 2M4.5 2H8v3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+</div>`).join('');
+  grid.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openEdit(b.dataset.edit)}));
+  grid.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();deleteApp(b.dataset.del)}));
 }
 
-/* ── Emoji row ── */
 function buildEmojiRow(current){
-  const el = document.getElementById('emojiRow');
-  el.innerHTML = EMOJIS.map(e => `<div class="ep${e===current?' sel':''}" data-e="${e}">${e}</div>`).join('');
-  el.querySelectorAll('.ep').forEach(ep => ep.addEventListener('click', () => {
-    selEmoji = ep.dataset.e;
-    el.querySelectorAll('.ep').forEach(x => x.classList.remove('sel'));
+  const el=document.getElementById('emojiRow');
+  el.innerHTML=EMOJIS.map(e=>`<div class="ep${e===current?' sel':''}" data-e="${e}">${e}</div>`).join('');
+  el.querySelectorAll('.ep').forEach(ep=>ep.addEventListener('click',()=>{
+    selEmoji=ep.dataset.e;
+    el.querySelectorAll('.ep').forEach(x=>x.classList.remove('sel'));
     ep.classList.add('sel');
   }));
 }
 
 function openAdd(){
-  editId = null; selEmoji = '🚀';
-  document.getElementById('modalTitle').textContent = 'Add App';
-  document.getElementById('fName').value = '';
-  document.getElementById('fUrl').value  = '';
-  document.getElementById('fDesc').value = '';
+  editId=null;selEmoji='🚀';
+  document.getElementById('modalTitle').textContent='Add App';
+  document.getElementById('fName').value='';
+  document.getElementById('fUrl').value='';
+  document.getElementById('fDesc').value='';
   buildEmojiRow('🚀');
   document.getElementById('modal').classList.add('open');
-  if(window.innerWidth >= 520) setTimeout(() => document.getElementById('fName').focus(), 80);
+  if(window.innerWidth>=520) setTimeout(()=>document.getElementById('fName').focus(),80);
 }
 
 function openEdit(id){
-  const a = apps.find(x => x._id === id); if(!a) return;
-  editId = id; selEmoji = a.emoji || '🚀';
-  document.getElementById('modalTitle').textContent = 'Edit App';
-  document.getElementById('fName').value = a.name;
-  document.getElementById('fUrl').value  = a.url;
-  document.getElementById('fDesc').value = a.desc || '';
+  const a=apps.find(x=>x._id===id);if(!a)return;
+  editId=id;selEmoji=a.emoji||'🚀';
+  document.getElementById('modalTitle').textContent='Edit App';
+  document.getElementById('fName').value=a.name;
+  document.getElementById('fUrl').value=a.url;
+  document.getElementById('fDesc').value=a.desc||'';
   buildEmojiRow(selEmoji);
   document.getElementById('modal').classList.add('open');
 }
 
 function closeModal(){
   document.getElementById('modal').classList.remove('open');
-  document.activeElement && document.activeElement.blur();
+  document.activeElement&&document.activeElement.blur();
 }
 
 async function saveApp(){
-  const name = document.getElementById('fName').value.trim();
-  const url  = document.getElementById('fUrl').value.trim();
-  if(!name){ document.getElementById('fName').focus(); return }
-  if(!url) { document.getElementById('fUrl').focus();  return }
-  if(!window._appsCol){ showToast('Not signed in'); return }
-
-  const data = {
-    name, url,
-    desc:  document.getElementById('fDesc').value.trim(),
-    emoji: selEmoji,
-  };
-
-  setSyncDot('syncing');
-  closeModal();
-  try {
-    if(editId){
-      await updateDoc(doc(window._db, 'users', window._uid, 'apps', editId), data);
-      showToast('App updated ✓');
-    } else {
-      data.date = serverTimestamp();
-      await addDoc(window._appsCol, data);
-      showToast('App added ✓');
-    }
-  } catch(err){
-    setSyncDot('error');
-    showToast('Error saving');
-    console.error(err);
-  }
+  const name=document.getElementById('fName').value.trim();
+  const url=document.getElementById('fUrl').value.trim();
+  if(!name){document.getElementById('fName').focus();return}
+  if(!url){document.getElementById('fUrl').focus();return}
+  if(!window._appsCol){showToast('Not signed in');return}
+  const data={name,url,desc:document.getElementById('fDesc').value.trim(),emoji:selEmoji};
+  setSyncDot('syncing');closeModal();
+  try{
+    if(editId){ await updateDoc(doc(window._db,'users',window._uid,'apps',editId),data); showToast('App updated ✓'); }
+    else{ data.date=serverTimestamp(); await addDoc(window._appsCol,data); showToast('App added ✓'); }
+  }catch(err){ setSyncDot('error');showToast('Error saving');console.error(err); }
 }
 
 async function deleteApp(id){
-  if(!confirm('Remove this app?')) return;
+  if(!confirm('Remove this app?'))return;
   setSyncDot('syncing');
-  try {
-    await deleteDoc(doc(window._db, 'users', window._uid, 'apps', id));
-    showToast('App removed');
-  } catch(err){
-    setSyncDot('error');
-    showToast('Error deleting');
-    console.error(err);
-  }
+  try{ await deleteDoc(doc(window._db,'users',window._uid,'apps',id)); showToast('App removed'); }
+  catch(err){ setSyncDot('error');showToast('Error deleting');console.error(err); }
 }
 
-/* ── View toggle ── */
-document.getElementById('viewToggle').addEventListener('click', () => {
-  isListView = !isListView;
-  document.getElementById('viewIcon').innerHTML = isListView
-    ? `<path d="M1.5 4h12M1.5 7.5h12M1.5 11h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>`
-    : `<rect x="1" y="1" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/>`;
+document.getElementById('viewToggle').addEventListener('click',()=>{
+  isListView=!isListView;
+  document.getElementById('viewIcon').innerHTML=isListView
+    ?`<path d="M1.5 4h12M1.5 7.5h12M1.5 11h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>`
+    :`<rect x="1" y="1" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/>`;
   renderGrid();
 });
 
-/* ── Swipe down to close ── */
-let touchStartY = 0;
-document.querySelector('.modal').addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY }, {passive:true});
-document.querySelector('.modal').addEventListener('touchmove',  e => { if(e.touches[0].clientY - touchStartY > 60) closeModal() }, {passive:true});
+let touchStartY=0;
+document.querySelector('.modal').addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY},{passive:true});
+document.querySelector('.modal').addEventListener('touchmove',e=>{if(e.touches[0].clientY-touchStartY>60)closeModal()},{passive:true});
 
-/* ── Events ── */
-document.getElementById('addBtnDesktop').addEventListener('click', openAdd);
-document.getElementById('fabBtn').addEventListener('click', openAdd);
-document.getElementById('closeModal').addEventListener('click', closeModal);
-document.getElementById('cancelBtn').addEventListener('click', closeModal);
-document.getElementById('saveBtn').addEventListener('click', saveApp);
-document.getElementById('modal').addEventListener('click', e => { if(e.target === document.getElementById('modal')) closeModal() });
-document.getElementById('search').addEventListener('input', renderGrid);
-document.getElementById('sortBy').addEventListener('change', renderGrid);
-document.addEventListener('keydown', e => {
-  if(e.key === 'Escape') closeModal();
-  if((e.metaKey||e.ctrlKey) && e.key === 'k'){ e.preventDefault(); document.getElementById('search').focus() }
+document.getElementById('addBtnDesktop').addEventListener('click',openAdd);
+document.getElementById('fabBtn').addEventListener('click',openAdd);
+document.getElementById('closeModal').addEventListener('click',closeModal);
+document.getElementById('cancelBtn').addEventListener('click',closeModal);
+document.getElementById('saveBtn').addEventListener('click',saveApp);
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal()});
+document.getElementById('search').addEventListener('input',renderGrid);
+document.getElementById('sortBy').addEventListener('change',renderGrid);
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.getElementById('search').focus()}
 });
 </script>
 </body>

@@ -39,7 +39,7 @@ body::before{
   pointer-events:none;z-index:0;
 }
 
-/* ── Page shell (always visible) ── */
+/* ── Page shell ── */
 .page{
   position:relative;z-index:1;max-width:1100px;margin:0 auto;
   padding:0 20px calc(88px + var(--safe-bottom));
@@ -69,7 +69,6 @@ body::before{
 .brand-name span{color:var(--t3);font-weight:400}
 .topbar-right{display:flex;align-items:center;gap:8px}
 
-/* pill stat — hidden when not authed */
 .pill-stat{
   font-family:var(--mono);font-size:11px;color:var(--t3);
   background:var(--s2);border:1px solid var(--b1);
@@ -89,7 +88,6 @@ body::before{
 .sync-dot.error{background:var(--red)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
 
-/* Sign-in button in topbar — shown when not authed */
 .topbar-signin{
   display:none;align-items:center;gap:7px;
   padding:8px 15px;border-radius:var(--r);
@@ -102,7 +100,6 @@ body::before{
 @media(hover:hover){.topbar-signin:hover{border-color:var(--b3);color:var(--t1);background:var(--s3)}}
 .topbar-signin:active{opacity:.8}
 
-/* User avatar + menu */
 .user-avatar{
   width:30px;height:30px;border-radius:50%;border:2px solid var(--b2);
   object-fit:cover;cursor:pointer;flex-shrink:0;transition:border-color .15s;
@@ -147,7 +144,7 @@ body::before{
 .topbar-add{display:none}
 @media(min-width:600px){.topbar-add{display:inline-flex}}
 
-/* Controls — hidden when not authed */
+/* Controls */
 .controls{
   display:none;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;
 }
@@ -176,12 +173,16 @@ option{background:#18181c}
 @media(min-width:900px){.grid{grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px}}
 .grid.lv{grid-template-columns:1fr;gap:6px}
 
-/* App card */
+/* ── Drag & Drop ── */
 .app-card{
   background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:14px;
   display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;
-  transition:all .2s var(--ease);animation:cIn .22s var(--ease) both;
+  transition:all .2s var(--ease), box-shadow .2s var(--ease);
+  animation:cIn .22s var(--ease) both;
   -webkit-tap-highlight-color:transparent;
+  cursor:grab;
+  user-select:none;
+  -webkit-user-select:none;
 }
 @media(min-width:480px){.app-card{padding:20px;gap:14px}}
 @keyframes cIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
@@ -195,6 +196,41 @@ option{background:#18181c}
   .app-card:hover::before{opacity:1}
 }
 .app-card:active{opacity:.88}
+/* Dragging state */
+.app-card.dragging{
+  opacity:0.35;
+  transform:scale(0.97);
+  cursor:grabbing;
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px var(--accent-dim);
+}
+/* Drop target highlight */
+.app-card.drag-over{
+  border-color:rgba(103,33,255,0.6)!important;
+  background:var(--s2)!important;
+  transform:translateY(-3px) scale(1.01)!important;
+  box-shadow:0 0 0 2px var(--accent-dim), 0 16px 48px rgba(0,0,0,0.4)!important;
+}
+/* Drag handle — subtle, only visible on hover */
+.drag-handle{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  width:28px;height:14px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;opacity:0;transition:opacity .15s;
+  pointer-events:none;
+}
+.drag-handle span{
+  display:block;width:20px;height:2px;border-radius:1px;
+  background:var(--t3);
+}
+@media(hover:hover){
+  .app-card:hover .drag-handle{opacity:1}
+}
+/* List view drag handle — left side */
+.grid.lv .drag-handle{
+  top:50%;left:10px;transform:translateY(-50%);
+  width:14px;height:28px;flex-direction:row;
+}
+.grid.lv .drag-handle span{width:2px;height:14px}
 .grid.lv .app-card{flex-direction:row;align-items:center;padding:12px 14px;gap:12px;border-radius:var(--r)}
 @media(min-width:480px){.grid.lv .app-card{padding:13px 18px;gap:16px}}
 .grid.lv .card-body{flex:1;min-width:0}
@@ -240,7 +276,7 @@ option{background:#18181c}
 .open-btn:active{opacity:.75}
 @media(hover:hover){.open-btn:hover{background:var(--accent-mid);border-color:rgba(103,33,255,0.4)}}
 
-/* ── States: loading, empty, sign-in ── */
+/* ── States ── */
 .state-wrap{
   grid-column:1/-1;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
@@ -248,7 +284,7 @@ option{background:#18181c}
   animation:cIn .3s var(--ease);
 }
 
-/* Loading skeleton */
+/* Skeleton */
 .sk-grid{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
 @media(min-width:480px){.sk-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}}
 .sk-card{
@@ -263,7 +299,7 @@ option{background:#18181c}
 .sk-line.w40{width:40%}
 @keyframes shimmer{0%,100%{opacity:.5}50%{opacity:1}}
 
-/* Sign-in empty state */
+/* Sign-in state */
 .signin-state{
   grid-column:1/-1;display:flex;flex-direction:column;
   align-items:center;padding:56px 20px 48px;
@@ -496,7 +532,7 @@ option{background:#18181c}
   </div>
 </div>
 
-<!-- ══ APP SHELL (always visible) ══ -->
+<!-- ══ APP SHELL ══ -->
 <div class="page">
   <div class="topbar">
     <div class="brand">
@@ -514,7 +550,6 @@ option{background:#18181c}
       <div class="sync-dot" id="syncDot"></div>
       <div class="pill-stat" id="statPill"><b>—</b></div>
 
-      <!-- view toggle: only when authed -->
       <button class="btn btn-ghost" id="viewToggle" title="Toggle view" style="padding:9px 11px;display:none">
         <svg id="viewIcon" width="15" height="15" viewBox="0 0 15 15" fill="none">
           <rect x="1" y="1" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
@@ -524,19 +559,16 @@ option{background:#18181c}
         </svg>
       </button>
 
-      <!-- Add App: only when authed -->
       <button class="btn btn-primary topbar-add" id="addBtnDesktop" style="display:none">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5v9M1.5 6h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         Add App
       </button>
 
-      <!-- Sign in button: when not authed -->
       <button class="topbar-signin" id="topbarSigninBtn">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2h3a1 1 0 011 1v8a1 1 0 01-1 1H9M6 10l3-3-3-3M9 7H1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Sign in
       </button>
 
-      <!-- User avatar: when authed -->
       <div class="user-menu-wrap">
         <img id="userAvatar" class="user-avatar" src="" alt="User" width="30" height="30"/>
         <div class="user-menu" id="userMenu">
@@ -557,7 +589,6 @@ option{background:#18181c}
     </div>
   </div>
 
-  <!-- Controls: shown when authed -->
   <div class="controls" id="controls">
     <div class="search-wrap">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -567,13 +598,13 @@ option{background:#18181c}
       <input type="text" id="search" placeholder="Search apps…"/>
     </div>
     <select class="ctrl-select" id="sortBy">
+      <option value="custom">Custom order</option>
       <option value="name">A → Z</option>
       <option value="date">Recent</option>
     </select>
   </div>
 
   <div class="grid" id="grid">
-    <!-- Skeleton on first load -->
     <div class="sk-grid" id="skeletonWrap">
       <div class="sk-card"><div class="sk sk-icon"></div><div class="sk sk-line w60"></div><div class="sk sk-line w80"></div><div class="sk sk-line w40"></div></div>
       <div class="sk-card"><div class="sk sk-icon"></div><div class="sk sk-line w80"></div><div class="sk sk-line w60"></div><div class="sk sk-line w40"></div></div>
@@ -686,7 +717,7 @@ window.showToast=function(msg){
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import{getAnalytics}from"https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import{getFirestore,collection,doc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,query,orderBy}from"https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import{getFirestore,collection,doc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,query,orderBy,writeBatch}from"https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyD8R1T24aMWItAgqwb814Aa49A1HmtW6Js",
@@ -703,30 +734,34 @@ const auth=getAuth(firebaseApp);
 const db=getFirestore(firebaseApp);
 
 const EMOJIS=['🚀','⚡','📊','🎨','💡','💻','🌐','📈','🎮','🤖','🔐','💰','📝','🗂️','⚙️','🌍','📌','🏋️','🏃','⚽','🎯','❤️','🔥','💪'];
-let apps=[],editId=null,selEmoji='🚀',isListView=false,unsubSnap=null;
+let apps=[],editId=null,selEmoji='🚀',unsubSnap=null;
 
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function setSyncDot(state){
-  const d=document.getElementById('syncDot');
-  d.className='sync-dot show '+state;
+/* ── Persistent view mode via localStorage ── */
+let isListView = localStorage.getItem('apphub_view') === 'list';
+applyViewToggleIcon();
+
+function applyViewToggleIcon(){
+  const icon = document.getElementById('viewIcon');
+  if(!icon) return;
+  icon.innerHTML = isListView
+    ? `<path d="M1.5 4h12M1.5 7.5h12M1.5 11h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>`
+    : `<rect x="1" y="1" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/>`;
 }
 
-/* ── Sign-in trigger (topbar button + grid button both call this) ── */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function setSyncDot(state){document.getElementById('syncDot').className='sync-dot show '+state;}
+
 async function triggerSignIn(){
   try{await signInWithPopup(auth,new GoogleAuthProvider());}
   catch(err){console.error(err);window.showToast('Sign in failed — try again');}
 }
 
-/* ── Auth state → drives ALL UI ── */
+/* ── Auth state ── */
 onAuthStateChanged(auth,user=>{
-  const grid=document.getElementById('grid');
   const skWrap=document.getElementById('skeletonWrap');
-
-  // Always remove skeleton first
-  if(skWrap) skWrap.remove();
+  if(skWrap)skWrap.remove();
 
   if(user){
-    /* ── AUTHED UI ── */
     document.getElementById('topbarSigninBtn').classList.remove('show');
     document.getElementById('userAvatar').classList.add('show');
     document.getElementById('syncDot').classList.add('show');
@@ -735,7 +770,6 @@ onAuthStateChanged(auth,user=>{
     document.getElementById('viewToggle').style.display='';
     document.getElementById('addBtnDesktop').style.display='';
     document.getElementById('fabBtn').classList.add('show');
-
     document.getElementById('userAvatar').src=user.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName||'U')}&background=6721FF&color=fff&size=60`;
     document.getElementById('menuName').textContent=user.displayName||'User';
     document.getElementById('menuEmail').textContent=user.email||'';
@@ -743,16 +777,22 @@ onAuthStateChanged(auth,user=>{
     if(unsubSnap)unsubSnap();
     setSyncDot('syncing');
     const appsCol=collection(db,'users',user.uid,'apps');
-    const q=query(appsCol,orderBy('date','desc'));
+    /* Use 'order' field for custom sort, fallback to date */
+    const q=query(appsCol,orderBy('order','asc'));
     unsubSnap=onSnapshot(q,
       snap=>{apps=snap.docs.map(d=>({...d.data(),_id:d.id}));setSyncDot('synced');renderGrid();},
-      err=>{setSyncDot('error');console.error('Firestore:',err);
-        grid.innerHTML=`<div class="empty-state"><svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect x="4" y="4" width="36" height="36" rx="6" stroke="#f06565" stroke-width="1.5" stroke-dasharray="5 3"/><path d="M22 14v10M22 28v2" stroke="#f06565" stroke-width="1.5" stroke-linecap="round"/></svg><h3>Connection error</h3><p>Check Firestore rules.</p></div>`;}
+      // If 'order' index doesn't exist yet, fall back to date ordering
+      err=>{
+        const q2=query(appsCol,orderBy('date','desc'));
+        unsubSnap=onSnapshot(q2,
+          snap=>{apps=snap.docs.map(d=>({...d.data(),_id:d.id}));setSyncDot('synced');renderGrid();},
+          e2=>{setSyncDot('error');console.error('Firestore:',e2);
+            document.getElementById('grid').innerHTML=`<div class="empty-state"><svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect x="4" y="4" width="36" height="36" rx="6" stroke="#f06565" stroke-width="1.5" stroke-dasharray="5 3"/><path d="M22 14v10M22 28v2" stroke="#f06565" stroke-width="1.5" stroke-linecap="round"/></svg><h3>Connection error</h3><p>Check Firestore rules.</p></div>`;}
+        );
+      }
     );
     window._appsCol=appsCol;window._db=db;window._uid=user.uid;
-
   } else {
-    /* ── NOT AUTHED UI ── */
     document.getElementById('topbarSigninBtn').classList.add('show');
     document.getElementById('userAvatar').classList.remove('show');
     document.getElementById('syncDot').classList.remove('show');
@@ -767,7 +807,7 @@ onAuthStateChanged(auth,user=>{
   }
 });
 
-/* ── Render: sign-in empty state ── */
+/* ── Render: sign-in state ── */
 function renderSignIn(){
   document.getElementById('grid').className='grid';
   document.getElementById('grid').innerHTML=`
@@ -785,24 +825,15 @@ function renderSignIn(){
     <div class="features">
       <div class="feature">
         <div class="feat-icon">🔐</div>
-        <div class="feat-text">
-          <strong>Private to you</strong>
-          <span>Your apps are stored securely in your account only</span>
-        </div>
+        <div class="feat-text"><strong>Private to you</strong><span>Your apps are stored securely in your account only</span></div>
       </div>
       <div class="feature">
         <div class="feat-icon">🌐</div>
-        <div class="feat-text">
-          <strong>Access anywhere</strong>
-          <span>Same apps on your phone, tablet and desktop</span>
-        </div>
+        <div class="feat-text"><strong>Access anywhere</strong><span>Same apps on your phone, tablet and desktop</span></div>
       </div>
       <div class="feature">
         <div class="feat-icon">⚡</div>
-        <div class="feat-text">
-          <strong>Instant sync</strong>
-          <span>Add an app once, it's everywhere immediately</span>
-        </div>
+        <div class="feat-text"><strong>Instant sync</strong><span>Add an app once, it's everywhere immediately</span></div>
       </div>
     </div>
     <button class="btn-google-big" id="gridSigninBtn">
@@ -823,20 +854,25 @@ function renderSignIn(){
 function renderGrid(){
   const q=document.getElementById('search').value.toLowerCase();
   const sort=document.getElementById('sortBy').value;
-  let list=apps.filter(a=>!q||a.name.toLowerCase().includes(q)||(a.desc||'').toLowerCase().includes(q));
-  if(sort==='name')list.sort((a,b)=>a.name.localeCompare(b.name));
-  else list.sort((a,b)=>(b.date?.seconds||0)-(a.date?.seconds||0));
+  let list=[...apps].filter(a=>!q||a.name.toLowerCase().includes(q)||(a.desc||'').toLowerCase().includes(q));
+
+  if(sort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(sort==='date') list.sort((a,b)=>(b.date?.seconds||0)-(a.date?.seconds||0));
+  else list.sort((a,b)=>(a.order??999)-(b.order??999)); // custom
 
   const grid=document.getElementById('grid');
   grid.className='grid'+(isListView?' lv':'');
   document.getElementById('statPill').innerHTML=`<b>${apps.length}</b> app${apps.length!==1?'s':''}`;
+
+  const isDraggable = sort==='custom' && !q;
 
   if(!list.length){
     grid.innerHTML=`<div class="empty-state"><svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect x="4" y="4" width="36" height="36" rx="6" stroke="#555566" stroke-width="1.5" stroke-dasharray="5 3"/><path d="M15 22h14M22 15v14" stroke="#555566" stroke-width="1.5" stroke-linecap="round"/></svg><h3>${q?'No apps found':'No apps yet'}</h3><p>${q?'Try a different search.':'Tap the + button to add your first app.'}</p></div>`;
     return;
   }
 
-  grid.innerHTML=list.map((a,i)=>`<div class="app-card" style="animation-delay:${i*.04}s">
+  grid.innerHTML=list.map((a,i)=>`<div class="app-card" data-id="${a._id}" draggable="${isDraggable}" style="animation-delay:${i*.04}s">
+  <div class="drag-handle"><span></span><span></span><span></span></div>
   <div class="card-top"><div class="app-icon">${a.emoji||'📦'}</div><div class="card-actions">
     <button class="ic-btn" data-edit="${a._id}" title="Edit"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8.2 1.8l2 2-6.5 6.5H1.7V8.3l6.5-6.5z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg></button>
     <button class="ic-btn del" data-del="${a._id}" title="Delete"><svg width="11" height="12" viewBox="0 0 11 12" fill="none"><path d="M1 3h9M4 3V2h3v1M2 3l.5 7.5h6L9 3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -848,6 +884,172 @@ function renderGrid(){
 
   grid.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openEdit(b.dataset.edit)}));
   grid.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();deleteApp(b.dataset.del)}));
+
+  /* Prevent open-btn drag interfering */
+  grid.querySelectorAll('.open-btn').forEach(a=>a.addEventListener('mousedown',e=>e.stopPropagation()));
+
+  if(isDraggable) initDrag(grid);
+}
+
+/* ══════════════════════════════════
+   DRAG & DROP — HTML5 + touch
+══════════════════════════════════ */
+let dragSrc=null, dragTouchY=0, ghostEl=null, touchDragId=null;
+
+function initDrag(grid){
+  /* ── Desktop HTML5 drag ── */
+  grid.querySelectorAll('.app-card').forEach(card=>{
+    card.addEventListener('dragstart',onDragStart);
+    card.addEventListener('dragenter',onDragEnter);
+    card.addEventListener('dragover',onDragOver);
+    card.addEventListener('dragleave',onDragLeave);
+    card.addEventListener('drop',onDrop);
+    card.addEventListener('dragend',onDragEnd);
+  });
+
+  /* ── Mobile touch drag ── */
+  grid.querySelectorAll('.app-card').forEach(card=>{
+    card.addEventListener('touchstart',onTouchStart,{passive:true});
+  });
+  document.addEventListener('touchmove',onTouchMove,{passive:false});
+  document.addEventListener('touchend',onTouchEnd,{passive:true});
+}
+
+/* ── Desktop handlers ── */
+function onDragStart(e){
+  dragSrc=this;
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',this.dataset.id);
+}
+function onDragEnter(e){
+  e.preventDefault();
+  if(this!==dragSrc) this.classList.add('drag-over');
+}
+function onDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+}
+function onDragLeave(){
+  this.classList.remove('drag-over');
+}
+function onDrop(e){
+  e.preventDefault();e.stopPropagation();
+  this.classList.remove('drag-over');
+  if(this===dragSrc) return;
+  swapAndSave(dragSrc.dataset.id, this.dataset.id);
+}
+function onDragEnd(){
+  document.getElementById('grid').querySelectorAll('.app-card').forEach(c=>{
+    c.classList.remove('dragging','drag-over');
+  });
+  dragSrc=null;
+}
+
+/* ── Touch handlers ── */
+function onTouchStart(e){
+  const card=this;
+  // Wait for a 150ms hold before activating drag (prevents accidental drags during scroll)
+  const id=card.dataset.id;
+  card._touchHold=setTimeout(()=>{
+    touchDragId=id;
+    const t=e.touches[0];
+    dragTouchY=t.clientY;
+    createGhost(card,t.clientX,t.clientY);
+    card.classList.add('dragging');
+    window.showToast('Drag to reorder');
+  },150);
+}
+function onTouchMove(e){
+  // Clear hold if finger moves early (scroll intent)
+  document.getElementById('grid').querySelectorAll('.app-card').forEach(c=>{
+    if(c._touchHold){clearTimeout(c._touchHold);c._touchHold=null;}
+  });
+  if(!touchDragId) return;
+  e.preventDefault();
+  const t=e.touches[0];
+  if(ghostEl){
+    ghostEl.style.left=(t.clientX-ghostEl._offX)+'px';
+    ghostEl.style.top=(t.clientY-ghostEl._offY)+'px';
+  }
+  // Highlight card under finger
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  const targetCard=el?.closest('.app-card');
+  document.getElementById('grid').querySelectorAll('.app-card').forEach(c=>c.classList.remove('drag-over'));
+  if(targetCard && targetCard.dataset.id && targetCard.dataset.id!==touchDragId){
+    targetCard.classList.add('drag-over');
+  }
+}
+function onTouchEnd(e){
+  // Clear any pending holds
+  document.getElementById('grid').querySelectorAll('.app-card').forEach(c=>{
+    if(c._touchHold){clearTimeout(c._touchHold);c._touchHold=null;}
+  });
+  if(!touchDragId) return;
+  const t=e.changedTouches[0];
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  const targetCard=el?.closest('.app-card');
+  removeGhost();
+  document.getElementById('grid').querySelectorAll('.app-card').forEach(c=>{
+    c.classList.remove('dragging','drag-over');
+  });
+  if(targetCard && targetCard.dataset.id && targetCard.dataset.id!==touchDragId){
+    swapAndSave(touchDragId, targetCard.dataset.id);
+  }
+  touchDragId=null;
+}
+
+function createGhost(card,cx,cy){
+  const rect=card.getBoundingClientRect();
+  ghostEl=card.cloneNode(true);
+  ghostEl.style.cssText=`
+    position:fixed;pointer-events:none;z-index:9999;
+    width:${rect.width}px;height:${rect.height}px;
+    left:${rect.left}px;top:${rect.top}px;
+    opacity:0.85;transform:rotate(2deg) scale(1.04);
+    box-shadow:0 24px 60px rgba(0,0,0,0.5);
+    border:1px solid rgba(103,33,255,0.5);
+    border-radius:12px;background:var(--s2);
+    transition:transform .1s;
+  `;
+  ghostEl._offX=cx-rect.left;
+  ghostEl._offY=cy-rect.top;
+  document.body.appendChild(ghostEl);
+}
+function removeGhost(){
+  if(ghostEl){ghostEl.remove();ghostEl=null;}
+}
+
+/* ── Core: reorder in apps array and persist ── */
+async function swapAndSave(srcId, dstId){
+  const srcIdx=apps.findIndex(a=>a._id===srcId);
+  const dstIdx=apps.findIndex(a=>a._id===dstId);
+  if(srcIdx===-1||dstIdx===-1) return;
+
+  // Move src to dst position
+  const moved=apps.splice(srcIdx,1)[0];
+  apps.splice(dstIdx,0,moved);
+
+  // Re-assign order values
+  apps.forEach((a,i)=>a.order=i);
+  renderGrid(); // Optimistic UI update
+
+  // Persist to Firestore in a batch
+  if(!window._uid) return;
+  setSyncDot('syncing');
+  try{
+    const batch=writeBatch(db);
+    apps.forEach(a=>{
+      const ref=doc(db,'users',window._uid,'apps',a._id);
+      batch.update(ref,{order:a.order});
+    });
+    await batch.commit();
+    setSyncDot('synced');
+  }catch(err){
+    setSyncDot('error');
+    window.showToast('Failed to save order');
+    console.error(err);
+  }
 }
 
 /* ── Emoji picker ── */
@@ -892,8 +1094,16 @@ async function saveApp(){
   const data={name,url,desc:document.getElementById('fDesc').value.trim(),emoji:selEmoji};
   setSyncDot('syncing');closeModal();
   try{
-    if(editId){await updateDoc(doc(window._db,'users',window._uid,'apps',editId),data);window.showToast('App updated ✓');}
-    else{data.date=serverTimestamp();await addDoc(window._appsCol,data);window.showToast('App added ✓');}
+    if(editId){
+      await updateDoc(doc(window._db,'users',window._uid,'apps',editId),data);
+      window.showToast('App updated ✓');
+    }else{
+      // New apps go to the front (order=0, shift everyone else)
+      data.date=serverTimestamp();
+      data.order=0;
+      await addDoc(window._appsCol,data);
+      window.showToast('App added ✓');
+    }
   }catch(err){setSyncDot('error');window.showToast('Error saving');console.error(err);}
 }
 async function deleteApp(id){
@@ -909,12 +1119,11 @@ document.getElementById('signOutBtn').addEventListener('click',async()=>{
   await signOut(auth);window.showToast('Signed out');
 });
 
-/* ── View toggle ── */
+/* ── View toggle — persisted to localStorage ── */
 document.getElementById('viewToggle').addEventListener('click',()=>{
   isListView=!isListView;
-  document.getElementById('viewIcon').innerHTML=isListView
-    ?`<path d="M1.5 4h12M1.5 7.5h12M1.5 11h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>`
-    :`<rect x="1" y="1" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/>`;
+  localStorage.setItem('apphub_view', isListView ? 'list' : 'grid');
+  applyViewToggleIcon();
   renderGrid();
 });
 
@@ -937,7 +1146,6 @@ document.getElementById('modal').addEventListener('click',e=>{if(e.target===docu
 document.getElementById('search').addEventListener('input',renderGrid);
 document.getElementById('sortBy').addEventListener('change',renderGrid);
 
-/* Swipe down to close */
 let touchStartY=0;
 document.querySelector('.modal').addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY},{passive:true});
 document.querySelector('.modal').addEventListener('touchmove',e=>{if(e.touches[0].clientY-touchStartY>60)closeModal()},{passive:true});
